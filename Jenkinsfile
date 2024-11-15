@@ -7,9 +7,11 @@ pipeline {
     environment {
         APP_NAME = "register-app-pipeline"
         RELEASE = "1.0.0"
-        DOCKER_CREDENTIALS_ID = "Jenkins-Docker"
-        IMAGE_NAME = "${APP_NAME}"
+        DOCKER_USER = "sofoniasm"
+        DOCKER_PASS = credentials('Jenkins-Docker') // Jenkins credential ID
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+        DOCKER_BUILDKIT = "1"
     }
     stages {
         stage("Cleanup Workspace") {
@@ -51,21 +53,18 @@ pipeline {
         stage("Build & Push Docker Image") {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: env.DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        // Build the Docker image
-                        sh """
-                            docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USER}/${IMAGE_NAME}:latest
-                        """
-
-                        // Push the Docker image
-                        sh """
-                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                            docker push ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                            docker push ${DOCKER_USER}/${IMAGE_NAME}:latest
-                        """
-                    }
+                    // Build Docker image
+                    sh """
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                    """
+                    
+                    // Log in to Docker Hub and push images
+                    sh """
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                    docker push ${IMAGE_NAME}:latest
+                    """
                 }
             }
         }
