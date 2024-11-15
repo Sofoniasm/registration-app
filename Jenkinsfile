@@ -5,13 +5,14 @@ pipeline {
         maven 'Maven3'
     }
     environment {
+        DOCKER_BUILDKIT = "0"
         APP_NAME = "register-app-pipeline"
         RELEASE = "1.0.0"
         DOCKER_USER = "sofoniasm"
         DOCKER_PASS = credentials('Jenkins-Docker') // Jenkins credential ID
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-        DOCKER_BUILDKIT = "1"
+        
     }
     stages {
         stage("Cleanup Workspace") {
