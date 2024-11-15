@@ -12,9 +12,8 @@ pipeline {
         }
         stage("Checkout from SCM") {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github', url: 'https://github.com/Sofoniasm/register-appp.git']])
-                )
-            }   
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github', url: 'https://github.com/Sofoniasm/registration-app.git']])
+            }
         }
         stage("Build Application") {
             steps {
